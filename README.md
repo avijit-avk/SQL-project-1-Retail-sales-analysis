@@ -282,11 +282,17 @@ GROUP BY category;
 
 ## Q10: Orders by Sales Shift
 
+Create sales shifts based on the transaction time and count the number of orders in each shift.
+
 Shift Definition:
 
 * Morning → before 12:00
-* Afternoon → 12:00 to 17:00
+* Afternoon → between 12:00 and 17:00
 * Evening → after 17:00
+
+---
+
+### Solution 1: Direct Aggregation
 
 ```sql
 SELECT
@@ -299,6 +305,34 @@ SELECT
 FROM retail_sales
 GROUP BY shift;
 ```
+
+---
+
+### Solution 2: Using a CTE
+
+This approach first creates a temporary dataset containing the shift category and then performs the aggregation.
+
+```sql
+WITH hourly_sales AS (
+    SELECT
+        CASE
+            WHEN HOUR(sale_time) < 12 THEN 'Morning'
+            WHEN HOUR(sale_time) BETWEEN 12 AND 17 THEN 'Afternoon'
+            ELSE 'Evening'
+        END AS shift
+    FROM retail_sales
+)
+
+SELECT
+    shift,
+    COUNT(*) AS total_orders
+FROM hourly_sales
+GROUP BY shift;
+```
+
+Both approaches return the same result.
+The CTE version is often preferred in complex queries because it separates transformation logic from aggregation, improving readability and maintainability.
+
 
 ---
 
